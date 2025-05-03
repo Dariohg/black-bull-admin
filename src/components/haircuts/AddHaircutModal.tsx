@@ -11,7 +11,6 @@ import {
     FormControl,
     FormLabel,
     Input,
-    Select,
     NumberInput,
     NumberInputField,
     NumberInputStepper,
@@ -27,21 +26,18 @@ import {
     Icon
 } from '@chakra-ui/react';
 import { FiUpload, FiImage } from 'react-icons/fi';
-import { Product } from '../../pages/ProductsPage';
-import { Location } from '../../pages/LocationsPage';
+import { Haircut } from '../../pages/HaircutsPage';
 
-interface AddProductModalProps {
+interface AddHaircutModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onAddProduct: (product: Omit<Product, 'id'>) => void;
-    locations: Location[];
+    onAddHaircut: (haircut: Omit<Haircut, 'id'>) => void;
 }
 
-const AddProductModal: React.FC<AddProductModalProps> = ({
+const AddHaircutModal: React.FC<AddHaircutModalProps> = ({
                                                              isOpen,
                                                              onClose,
-                                                             onAddProduct,
-                                                             locations
+                                                             onAddHaircut
                                                          }) => {
     const toast = useToast();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -49,8 +45,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     // Estados para los campos del formulario
     const [name, setName] = useState('');
     const [price, setPrice] = useState<number>(0);
-    const [stock, setStock] = useState<number>(0);
-    const [locationId, setLocationId] = useState('');
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
@@ -59,8 +53,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     const [errors, setErrors] = useState({
         name: '',
         price: '',
-        stock: '',
-        locationId: '',
         image: ''
     });
 
@@ -69,8 +61,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
         const newErrors = {
             name: '',
             price: '',
-            stock: '',
-            locationId: '',
             image: ''
         };
 
@@ -83,18 +73,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
         // Validar precio
         if (price <= 0) {
             newErrors.price = 'El precio debe ser mayor a 0';
-            isValid = false;
-        }
-
-        // Validar stock
-        if (stock < 0) {
-            newErrors.stock = 'El stock no puede ser negativo';
-            isValid = false;
-        }
-
-        // Validar sucursal
-        if (!locationId) {
-            newErrors.locationId = 'Debe seleccionar una sucursal';
             isValid = false;
         }
 
@@ -111,18 +89,16 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
         try {
             // En una aplicación real, aquí se enviaría una solicitud al backend
-            // para subir la imagen y guardar el producto
+            // para subir la imagen y guardar el corte de cabello
 
             // Simular procesamiento de imagen
             const processedImageUrl = imageFile
                 ? URL.createObjectURL(imageFile) // En un entorno real, esto sería la URL devuelta por el servidor
                 : "https://via.placeholder.com/300x200/111111/FFFFFF?text=BLACK+BULL";
 
-            onAddProduct({
+            onAddHaircut({
                 name,
                 price,
-                stock,
-                locationId,
                 imageUrl: processedImageUrl
             });
 
@@ -131,7 +107,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
             // Mostrar notificación de éxito
             toast({
-                title: 'Producto agregado',
+                title: 'Corte agregado',
                 description: `${name} ha sido agregado exitosamente.`,
                 status: 'success',
                 duration: 3000,
@@ -140,7 +116,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
         } catch (error) {
             toast({
                 title: 'Error',
-                description: 'Ocurrió un error al agregar el producto',
+                description: 'Ocurrió un error al agregar el corte',
                 status: 'error',
                 duration: 3000,
                 isClosable: true,
@@ -153,15 +129,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     const resetForm = () => {
         setName('');
         setPrice(0);
-        setStock(0);
-        setLocationId('');
         setImageFile(null);
         setImagePreview('');
         setErrors({
             name: '',
             price: '',
-            stock: '',
-            locationId: '',
             image: ''
         });
     };
@@ -225,16 +197,16 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
         <Modal isOpen={isOpen} onClose={handleClose} size="lg">
             <ModalOverlay />
             <ModalContent bg="brand.800">
-                <ModalHeader color="white">Agregar Nuevo Producto</ModalHeader>
+                <ModalHeader color="white">Agregar Nuevo Corte</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
                     <VStack spacing={4}>
                         <FormControl isRequired isInvalid={!!errors.name}>
-                            <FormLabel>Nombre del Producto</FormLabel>
+                            <FormLabel>Nombre del Corte</FormLabel>
                             <Input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="Nombre del producto"
+                                placeholder="Nombre del corte de cabello"
                                 bg="brand.700"
                                 border="none"
                                 _focus={{
@@ -270,55 +242,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                             <FormErrorMessage>{errors.price}</FormErrorMessage>
                         </FormControl>
 
-                        <FormControl isRequired isInvalid={!!errors.stock}>
-                            <FormLabel>Stock Inicial</FormLabel>
-                            <NumberInput
-                                value={stock}
-                                onChange={(valueString) => setStock(parseInt(valueString))}
-                                min={0}
-                                precision={0}
-                                step={1}
-                                bg="brand.700"
-                            >
-                                <NumberInputField
-                                    border="none"
-                                    _focus={{
-                                        boxShadow: "0 0 0 1px #ff0000",
-                                        borderColor: "accent.500"
-                                    }}
-                                />
-                                <NumberInputStepper>
-                                    <NumberIncrementStepper />
-                                    <NumberDecrementStepper />
-                                </NumberInputStepper>
-                            </NumberInput>
-                            <FormErrorMessage>{errors.stock}</FormErrorMessage>
-                        </FormControl>
-
-                        <FormControl isRequired isInvalid={!!errors.locationId}>
-                            <FormLabel>Sucursal</FormLabel>
-                            <Select
-                                placeholder="Seleccionar sucursal"
-                                value={locationId}
-                                onChange={(e) => setLocationId(e.target.value)}
-                                bg="brand.700"
-                                border="none"
-                                _focus={{
-                                    boxShadow: "0 0 0 1px #ff0000",
-                                    borderColor: "accent.500"
-                                }}
-                            >
-                                {locations.map(location => (
-                                    <option key={location.id} value={location.id}>
-                                        {location.name}
-                                    </option>
-                                ))}
-                            </Select>
-                            <FormErrorMessage>{errors.locationId}</FormErrorMessage>
-                        </FormControl>
-
                         <FormControl isInvalid={!!errors.image}>
-                            <FormLabel>Imagen del Producto</FormLabel>
+                            <FormLabel>Imagen del Corte</FormLabel>
 
                             {/* Input de archivo oculto */}
                             <input
@@ -408,7 +333,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                         onClick={handleSubmit}
                         isLoading={isLoading}
                     >
-                        Guardar Producto
+                        Guardar Corte
                     </Button>
                 </ModalFooter>
             </ModalContent>
@@ -416,4 +341,4 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     );
 };
 
-export default AddProductModal;
+export default AddHaircutModal;

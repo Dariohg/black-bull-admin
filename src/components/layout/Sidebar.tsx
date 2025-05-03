@@ -17,10 +17,11 @@ import {
     FiCalendar,
     FiSettings,
     FiClock,
-    FiMapPin
+    FiMapPin,
+    FiScissors
 } from 'react-icons/fi';
 import { IconType } from 'react-icons';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 interface NavItemProps extends FlexProps {
     icon: IconType;
@@ -33,6 +34,9 @@ interface SidebarProps extends BoxProps {
 }
 
 const NavItem = ({ icon, children, to, ...rest }: NavItemProps) => {
+    const location = useLocation();
+    const isActive = location.pathname === to;
+
     return (
         <Link
             as={RouterLink}
@@ -47,8 +51,10 @@ const NavItem = ({ icon, children, to, ...rest }: NavItemProps) => {
                 borderRadius="lg"
                 role="group"
                 cursor="pointer"
+                bg={isActive ? 'accent.500' : 'transparent'}
+                color={isActive ? 'white' : 'inherit'}
                 _hover={{
-                    bg: 'accent.500',
+                    bg: isActive ? 'accent.600' : 'accent.500',
                     color: 'white',
                 }}
                 {...rest}
@@ -102,6 +108,9 @@ const Sidebar = ({ onClose, ...rest }: SidebarProps) => {
                 </NavItem>
                 <NavItem icon={FiShoppingBag} to="/products">
                     Productos
+                </NavItem>
+                <NavItem icon={FiScissors} to="/haircuts">
+                    Cortes
                 </NavItem>
                 <NavItem icon={FiMapPin} to="/locations">
                     Sucursales

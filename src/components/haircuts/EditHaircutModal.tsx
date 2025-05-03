@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Modal,
     ModalOverlay,
@@ -11,7 +11,6 @@ import {
     FormControl,
     FormLabel,
     Input,
-    Select,
     NumberInput,
     NumberInputField,
     NumberInputStepper,
@@ -27,30 +26,27 @@ import {
     Icon
 } from '@chakra-ui/react';
 import { FiUpload, FiImage } from 'react-icons/fi';
-import { Product } from '../../pages/ProductsPage';
-import { Location } from '../../pages/LocationsPage';
+import { Haircut } from '../../pages/HaircutsPage';
 
-interface AddProductModalProps {
+interface EditHaircutModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onAddProduct: (product: Omit<Product, 'id'>) => void;
-    locations: Location[];
+    onUpdateHaircut: (id: string, haircut: Partial<Haircut>) => void;
+    haircut: Haircut | null;
 }
 
-const AddProductModal: React.FC<AddProductModalProps> = ({
-                                                             isOpen,
-                                                             onClose,
-                                                             onAddProduct,
-                                                             locations
-                                                         }) => {
+const EditHaircutModal: React.FC<EditHaircutModalProps> = ({
+                                                               isOpen,
+                                                               onClose,
+                                                               onUpdateHaircut,
+                                                               haircut
+                                                           }) => {
     const toast = useToast();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Estados para los campos del formulario
     const [name, setName] = useState('');
     const [price, setPrice] = useState<number>(0);
-    const [stock, setStock] = useState<number>(0);
-    const [locationId, setLocationId] = useState('');
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
@@ -59,18 +55,23 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     const [errors, setErrors] = useState({
         name: '',
         price: '',
-        stock: '',
-        locationId: '',
         image: ''
     });
+
+    // Cargar datos del corte de cabello cuando se abre el modal
+    useEffect(() => {
+        if (haircut) {
+            setName(haircut.name);
+            setPrice(haircut.price);
+            setImagePreview(haircut.imageUrl || '');
+        }
+    }, [haircut]);
 
     const validateForm = () => {
         let isValid = true;
         const newErrors = {
             name: '',
             price: '',
-            stock: '',
-            locationId: '',
             image: ''
         };
 
@@ -86,24 +87,12 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
             isValid = false;
         }
 
-        // Validar stock
-        if (stock < 0) {
-            newErrors.stock = 'El stock no puede ser negativo';
-            isValid = false;
-        }
-
-        // Validar sucursal
-        if (!locationId) {
-            newErrors.locationId = 'Debe seleccionar una sucursal';
-            isValid = false;
-        }
-
         setErrors(newErrors);
         return isValid;
     };
 
     const handleSubmit = () => {
-        if (!validateForm()) {
+        if (!validateForm() || !haircut) {
             return;
         }
 
@@ -111,28 +100,25 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
         try {
             // En una aplicación real, aquí se enviaría una solicitud al backend
-            // para subir la imagen y guardar el producto
+            // para actualizar el corte y posiblemente la imagen
 
             // Simular procesamiento de imagen
             const processedImageUrl = imageFile
                 ? URL.createObjectURL(imageFile) // En un entorno real, esto sería la URL devuelta por el servidor
-                : "https://via.placeholder.com/300x200/111111/FFFFFF?text=BLACK+BULL";
+                : haircut.imageUrl || "https://via.placeholder.com/300x200/111111/FFFFFF?text=BLACK+BULL";
 
-            onAddProduct({
+            const updatedHaircut: Partial<Haircut> = {
                 name,
                 price,
-                stock,
-                locationId,
                 imageUrl: processedImageUrl
-            });
+            };
 
-            // Limpiar el formulario
-            resetForm();
+            onUpdateHaircut(haircut.id, updatedHaircut);
 
             // Mostrar notificación de éxito
             toast({
-                title: 'Producto agregado',
-                description: `${name} ha sido agregado exitosamente.`,
+                title: 'Corte actualizado',
+                description: `${name} ha sido actualizado exitosamente.`,
                 status: 'success',
                 duration: 3000,
                 isClosable: true,
@@ -140,7 +126,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
         } catch (error) {
             toast({
                 title: 'Error',
-                description: 'Ocurrió un error al agregar el producto',
+                description: 'Ocurrió un error al actualizar el corte',
                 status: 'error',
                 duration: 3000,
                 isClosable: true,
@@ -150,24 +136,14 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
         }
     };
 
-    const resetForm = () => {
-        setName('');
-        setPrice(0);
-        setStock(0);
-        setLocationId('');
-        setImageFile(null);
-        setImagePreview('');
+    const handleClose = () => {
+        // Restablecer errores al cerrar
         setErrors({
             name: '',
             price: '',
-            stock: '',
-            locationId: '',
             image: ''
         });
-    };
-
-    const handleClose = () => {
-        resetForm();
+        setImageFile(null);
         onClose();
     };
 
@@ -221,20 +197,23 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
         }
     };
 
+    // Si no hay corte, no renderizar nada
+    if (!haircut) return null;
+
     return (
         <Modal isOpen={isOpen} onClose={handleClose} size="lg">
             <ModalOverlay />
             <ModalContent bg="brand.800">
-                <ModalHeader color="white">Agregar Nuevo Producto</ModalHeader>
+                <ModalHeader color="white">Editar Corte</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
                     <VStack spacing={4}>
                         <FormControl isRequired isInvalid={!!errors.name}>
-                            <FormLabel>Nombre del Producto</FormLabel>
+                            <FormLabel>Nombre del Corte</FormLabel>
                             <Input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="Nombre del producto"
+                                placeholder="Nombre del corte de cabello"
                                 bg="brand.700"
                                 border="none"
                                 _focus={{
@@ -270,55 +249,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                             <FormErrorMessage>{errors.price}</FormErrorMessage>
                         </FormControl>
 
-                        <FormControl isRequired isInvalid={!!errors.stock}>
-                            <FormLabel>Stock Inicial</FormLabel>
-                            <NumberInput
-                                value={stock}
-                                onChange={(valueString) => setStock(parseInt(valueString))}
-                                min={0}
-                                precision={0}
-                                step={1}
-                                bg="brand.700"
-                            >
-                                <NumberInputField
-                                    border="none"
-                                    _focus={{
-                                        boxShadow: "0 0 0 1px #ff0000",
-                                        borderColor: "accent.500"
-                                    }}
-                                />
-                                <NumberInputStepper>
-                                    <NumberIncrementStepper />
-                                    <NumberDecrementStepper />
-                                </NumberInputStepper>
-                            </NumberInput>
-                            <FormErrorMessage>{errors.stock}</FormErrorMessage>
-                        </FormControl>
-
-                        <FormControl isRequired isInvalid={!!errors.locationId}>
-                            <FormLabel>Sucursal</FormLabel>
-                            <Select
-                                placeholder="Seleccionar sucursal"
-                                value={locationId}
-                                onChange={(e) => setLocationId(e.target.value)}
-                                bg="brand.700"
-                                border="none"
-                                _focus={{
-                                    boxShadow: "0 0 0 1px #ff0000",
-                                    borderColor: "accent.500"
-                                }}
-                            >
-                                {locations.map(location => (
-                                    <option key={location.id} value={location.id}>
-                                        {location.name}
-                                    </option>
-                                ))}
-                            </Select>
-                            <FormErrorMessage>{errors.locationId}</FormErrorMessage>
-                        </FormControl>
-
                         <FormControl isInvalid={!!errors.image}>
-                            <FormLabel>Imagen del Producto</FormLabel>
+                            <FormLabel>Imagen del Corte</FormLabel>
 
                             {/* Input de archivo oculto */}
                             <input
@@ -353,9 +285,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                                     Archivo seleccionado: {imageFile.name}
                                 </Text>
                             )}
-                            <Text fontSize="xs" color="gray.400" mt={1}>
-                                Se utilizará una imagen predeterminada si no seleccionas ninguna
-                            </Text>
                             <FormErrorMessage>{errors.image}</FormErrorMessage>
                         </FormControl>
 
@@ -408,7 +337,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                         onClick={handleSubmit}
                         isLoading={isLoading}
                     >
-                        Guardar Producto
+                        Actualizar Corte
                     </Button>
                 </ModalFooter>
             </ModalContent>
@@ -416,4 +345,4 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     );
 };
 
-export default AddProductModal;
+export default EditHaircutModal;

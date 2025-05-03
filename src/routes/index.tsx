@@ -3,6 +3,8 @@ import LoginPage from '../pages/LoginPage';
 import DashboardPage from '../pages/DashboardPage';
 import LocationsPage from '../pages/LocationsPage';
 import EmployeesPage from '../pages/EmployeesPage';
+import ProductsPage from '../pages/ProductsPage';
+import HaircutsPage from '../pages/HaircutsPage';
 import Layout from '../components/layout/Layout';
 import {JSX, useEffect, useState} from 'react';
 
@@ -65,6 +67,22 @@ const AppRoutes = () => {
                     <ProtectedRoute>
                         <Layout>
                             <EmployeesPage />
+                        </Layout>
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/products" element={
+                    <ProtectedRoute>
+                        <Layout>
+                            <ProductsPage />
+                        </Layout>
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/haircuts" element={
+                    <ProtectedRoute>
+                        <Layout>
+                            <HaircutsPage />
                         </Layout>
                     </ProtectedRoute>
                 } />

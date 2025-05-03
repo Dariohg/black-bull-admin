@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Box,
     Heading,
@@ -87,7 +87,7 @@ const ProductsPage: React.FC = () => {
     ]);
 
     // Datos de ejemplo para las sucursales
-    const [locations, setLocations] = useState<Location[]>([
+    const [locations] = useState<Location[]>([
         {
             id: '1',
             name: 'BLACK BULL Central',
