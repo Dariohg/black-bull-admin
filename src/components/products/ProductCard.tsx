@@ -134,7 +134,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
                 <HStack justifyContent="space-between" mt={2}>
                     <Text color="accent.500" fontWeight="bold" fontSize="lg">
-                        ${product.price.toFixed(2)}
+                        $ {product.price.toFixed(2)}
                     </Text>
                     <Text fontSize="sm" color="gray.400">
                         Stock: {product.stock}

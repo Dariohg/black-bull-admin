@@ -99,7 +99,7 @@ const HaircutCard: React.FC<HaircutCardProps> = ({
 
                 <HStack justifyContent="space-between" mt={2}>
                     <Text color="accent.500" fontWeight="bold" fontSize="lg">
-                        Q{haircut.price.toFixed(2)}
+                        $ {haircut.price.toFixed(2)}
                     </Text>
                 </HStack>
             </VStack>
